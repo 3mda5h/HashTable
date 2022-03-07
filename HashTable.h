@@ -7,7 +7,9 @@ using namespace std;
 class HashTable
 {
   public:
+  HashTable();
   
+  //Node* hashTable[];
 };
 
 #endif
