@@ -6,7 +6,7 @@ using namespace std;
 struct Node
 {
   Node* next = NULL;
-  char* value;
+  char* value = NULL;
 };
 
 int main() 
@@ -36,7 +36,7 @@ int main()
       hashValue = hashValue % 100; //remainder of hashvalue divided by 100?
       cout << "hash value is: " << hashValue << endl;
       Node* newNode = new Node();
-      newNode->value = input;
+      strcpy(newNode->value, input); //seg fault?? 
       if(hashTable[hashValue] == NULL)//if index is empty
       {
         hashTable[hashValue] = newNode;
@@ -51,19 +51,22 @@ int main()
         current->next = newNode; //new node added to end of linked list
       }
     }
-    if(strcmp(input, "print") == 0)
+    if(strcmp(input, "print") == 0) //print out all elements in hashtable
     {
       for(int i = 0; i < sizeof(hashTable); i++)
       {
         if(hashTable[i] != NULL)
         {
+          cout << "1" << endl;
           Node* current = hashTable[i];
+          cout << "2" << endl;
           while(current->next != NULL)
           {
+            cout << "3" << endl;
             cout << current->value << ", ";
             current = current->next;
           }
-          cout << current->value << endl;
+          cout << "value: " << current->value << endl;
         }
       }
     }
@@ -76,7 +79,7 @@ int main()
       {
         hashValue += int(input[i]); //add ascii values lolol 
       }
-      hashValue = 100 % hashValue; //remainder of 100 divided by hashValue?
+      hashValue = 100 % hashValue; //remainder of 100 divided by hashValue
       Node* current = hashTable[hashValue];
       while(current->next != NULL)
       {
