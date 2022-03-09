@@ -6,11 +6,13 @@ using namespace std;
 struct Node
 {
   Node* next = NULL;
-  char value[100];
+  char name[100];
+  char gpa[100];
+  char id[100];
 };
 
 int hashFunction(char* input, int size);
-void add(char* input, Node* hashTable[], int size);
+Node* hashTable add(char* input, Node* hashTable[], int size);
 void print(char* input, Node* hashTable[], int size);
 void remove(char* input, Node* hashTable[], int size);
 
@@ -28,9 +30,10 @@ int main()
     }
     if(strcmp(input, "add") == 0)
     {
-      cout <<"Enter name" << endl;
-      cin.getline(input, 100);
-      add(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
+      if(add(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0])) != NULL)
+      {
+        hashTable = add(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
+      }
     }
     if(strcmp(input, "print") == 0) //print out all elements in hashtable
     {
@@ -38,8 +41,6 @@ int main()
     }
     if(strcmp(input, "delete") == 0)
     {
-      cout << "Name of person you want to delete?" << endl;
-      cin.getline(input, 100);
       remove(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
     }
   }
@@ -59,25 +60,44 @@ int hashFunction(char* input, int size)
   return hashValue;
 }
 
-void add(char* input, Node* hashTable[], int size)
+Node* hashTable[] add(char* input, Node* hashTable[], int size)
 {
-  cout << "size in add: " << size << endl;
+  cout << "Enter name" << endl;
+  cin.getline(input, 100);
   int hashValue = hashFunction(input, size);
-  cout << "hash value is: " << hashValue << endl;
   Node* newNode = new Node();
-  strcpy(newNode->value, input); 
+  strcpy(newNode->name, input); 
+  cout << "Enter GPA" << endl;
+  strcpy(newNode->gpa, input);
+  cout << "Enter ID" << endl;
+  strcpy(newNode->id, input); 
+
   if(hashTable[hashValue] == NULL)//if index is empty
   {
     hashTable[hashValue] = newNode;
   }
   else
   {
+    int count = 0;
     Node* current = hashTable[hashValue];
     while(current->next != NULL)
     {
       current = current->next;
+      count++;
     }
-    current->next = newNode; //new node added to end of linked list
+    if(count < 3) //theres less than 3 nodes already in this index
+    {
+      current->next = newNode; //new node added to end of linked list
+      return NULL;
+    }
+    else
+    {
+      //rehash
+      Node* newHashTable[size*2] = {NULL};
+
+
+      //return new hashtable
+    }
   }
 }
 
@@ -90,10 +110,10 @@ void print(char* input, Node* hashTable[], int size)
       Node* current = hashTable[i];
       while(current->next != NULL)
       {
-        cout << current->value << ", ";
+        cout << current->name << ", " << current->gpa << ", " << current->id << endl;
         current = current->next;
       }
-      cout << current->value << ", ";
+      cout << current->name << ", " << current->gpa << ", " << current->id << endl;
     }
   }
   cout << endl;
@@ -101,6 +121,8 @@ void print(char* input, Node* hashTable[], int size)
 
 void remove(char* input, Node* hashTable[], int size)
 {
+  cout << "ID of person you want to delete?" << endl;
+  cin.getline(input, 100);
   int hashValue = hashFunction(input, size);
   Node* current = hashTable[hashValue];
   if(current->next == NULL) //if first node is only node at this index
@@ -113,7 +135,7 @@ void remove(char* input, Node* hashTable[], int size)
   {
     while(current->next != NULL)
     {
-      if(strcmp(current->value, input) == 0)
+      if(strcmp(current->id, input) == 0)
       {
         //current->previous->next = NULL;
         delete current;
