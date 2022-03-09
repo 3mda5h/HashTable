@@ -1,23 +1,35 @@
+//last names list from: https://www.powershellgallery.com/packages/TelligentCommunitySample/0.1.1/Content/Surnames.txt
+//firs names list from: https://www.usna.edu/Users/cs/roche/courses/s15si335/proj1/files.php%3Ff=names.txt.html
 #include <iostream>
 #include <cstring>
+#include <vector>
+#include <fstream>
+#include <string>
+#include <algorithm>
+
 
 using namespace std;
 
 struct Node
 {
   Node* next = NULL;
-  char name[100];
+  char firstName[100];
+  char lastName[100];
   char gpa[100];
   char id[100];
 };
 
 int hashFunction(char* input, int size);
-Node* hashTable add(char* input, Node* hashTable[], int size);
+Node* add(char* input, Node* hashTable[], int size);
 void print(char* input, Node* hashTable[], int size);
 void remove(char* input, Node* hashTable[], int size);
+void random(char* input, Node* hashTable[], int size, vector<char*> &firstNames, vector<char*> &lastNames);
+vector<char*> createList(const char* fileName);
 
 int main() 
 {
+  vector<char*> firstNames = createList("firstNames.txt");
+  vector<char*> lastNames = createList("lastNames.txt");
   Node* hashTable[100] = {NULL}; //array of node pointers
   char input[100];
   while(strcmp(input, "quit") != 0)
@@ -43,6 +55,10 @@ int main()
     {
       remove(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
     }
+    if(strcmp(input, "random") == 0)
+    {
+      
+    }
   }
 }
 
@@ -60,21 +76,25 @@ int hashFunction(char* input, int size)
   return hashValue;
 }
 
-Node* hashTable[] add(char* input, Node* hashTable[], int size)
+Node* add(char* input, Node* hashTable[], int size)
 {
-  cout << "Enter name" << endl;
+  Node* student = new Node();
+  cout << "Enter first name" << endl;
+  cin.getline(input, 100);
+  strcpy(student->firstName, input);
+  cout << "Enter last name" << endl;
   cin.getline(input, 100);
   int hashValue = hashFunction(input, size);
-  Node* newNode = new Node();
-  strcpy(newNode->name, input); 
   cout << "Enter GPA" << endl;
-  strcpy(newNode->gpa, input);
+  cin.getline(input, 100);
+  strcpy(student->gpa, input);
   cout << "Enter ID" << endl;
-  strcpy(newNode->id, input); 
+  cin.getline(input, 100);
+  strcpy(student->id, input); 
 
   if(hashTable[hashValue] == NULL)//if index is empty
   {
-    hashTable[hashValue] = newNode;
+    hashTable[hashValue] = student;
   }
   else
   {
@@ -87,13 +107,14 @@ Node* hashTable[] add(char* input, Node* hashTable[], int size)
     }
     if(count < 3) //theres less than 3 nodes already in this index
     {
-      current->next = newNode; //new node added to end of linked list
+      current->next = student; //new node added to end of linked list
       return NULL;
     }
     else
     {
       //rehash
-      Node* newHashTable[size*2] = {NULL};
+      size = size*2;
+      Node* newHashTable[size] = {NULL};
 
 
       //return new hashtable
@@ -143,5 +164,41 @@ void remove(char* input, Node* hashTable[], int size)
       }
       current = current->next;
     }
+  } 
+}
+
+void random(char* input, Node* hashTable, vector<char*> &firstNames, vector<char*> &lastNames)
+{
+  cout << "How many random students?" << endl;
+  cin.getline(input, 100);
+  for(int i = 0; i < atoi(input); i++)
+  {
+    int r;
+    srand(time(NULL));
+    r = rand()%(firstNames.size() - 1);
+    Node* student = new Node();
+    strcpy(student->firstName, firstNames[r]); //first name = random first name from list
+    r = rand()%(firstNames.size() - 1);
+    strcpy(student->lastName, lastNames[r]); //last name = random last name from list
+    //do id and gpa
   }
+}
+
+vector<char*> createList(const char* fileName)
+{
+  vector<char*>list;
+  ifstream file(fileName);
+  string line;
+  if(!file.is_open())
+  {
+    cout << "Could not open file" << endl;
+  }
+  while (getline(file, line))
+  {
+    char* c = new char[100];
+    line.erase(remove(line.begin(), line.end(), '\r'), line.end()); //remove \r from end of string
+    strcpy(c, line.c_str());
+    list.push_back(c);
+  }
+  return list;
 }
