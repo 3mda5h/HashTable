@@ -5,7 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <algorithm>
+//#include <algorithm>
 
 
 using namespace std;
@@ -15,25 +15,29 @@ struct Node
   Node* next = NULL;
   char firstName[100];
   char lastName[100];
-  char gpa[100];
+  float gpa;
   char id[100];
 };
 
 int hashFunction(char* input, int size);
-Node* add(char* input, Node* hashTable[], int size);
-void print(char* input, Node* hashTable[], int size);
-void remove(char* input, Node* hashTable[], int size);
-void random(char* input, Node* hashTable[], int size, vector<char*> &firstNames, vector<char*> &lastNames);
+Node* add(char* input, Node hashTable[], int size);
+void print(char* input, Node hashTable[], int size);
+void remove(char* input, Node hashTable[], int size);
+void random(char* input, Node* hashTable, int size, vector<char*> &firstNames, vector<char*> &lastNames);
 vector<char*> createList(const char* fileName);
 
 int main() 
 {
   vector<char*> firstNames = createList("firstNames.txt");
   vector<char*> lastNames = createList("lastNames.txt");
-  Node* hashTable[100] = {NULL}; //array of node pointers
+  Node* hashTableP;
+  Node* hashTable[100] = {NULL}; //array of nodes pointers
+  hashTableP = hashTable[0]; //pointer to array of node pointers 
   char input[100];
+  int size;
   while(strcmp(input, "quit") != 0)
   {
+    size = sizeof(hashTable)/sizeof(hashTable[0]);
     cout << "Enter ADD, PRINT, DELETE, or QUIT" << endl;
     cin.getline(input, 100);
     for(int i = 0; i < strlen(input); i++)
@@ -42,22 +46,22 @@ int main()
     }
     if(strcmp(input, "add") == 0)
     {
-      if(add(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0])) != NULL)
+      if(add(input, *hashTableP, size) != NULL)
       {
-        hashTable = add(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
+        hashTableP = add(input, *hashTableP, size);
       }
     }
     if(strcmp(input, "print") == 0) //print out all elements in hashtable
     {
-      print(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
+      print(input, hashTableP, size);
     }
     if(strcmp(input, "delete") == 0)
     {
-      remove(input, hashTable, sizeof(hashTable)/sizeof(hashTable[0]));
+      remove(input, hashTableP, size);
     }
     if(strcmp(input, "random") == 0)
     {
-      
+      random(input, hashTableP, size, firstNames, lastNames);
     }
   }
 }
@@ -87,7 +91,7 @@ Node* add(char* input, Node* hashTable[], int size)
   int hashValue = hashFunction(input, size);
   cout << "Enter GPA" << endl;
   cin.getline(input, 100);
-  strcpy(student->gpa, input);
+  student->gpa = atof(input);
   cout << "Enter ID" << endl;
   cin.getline(input, 100);
   strcpy(student->id, input); 
@@ -114,10 +118,18 @@ Node* add(char* input, Node* hashTable[], int size)
     {
       //rehash
       size = size*2;
-      Node* newHashTable[size] = {NULL};
-
-
-      //return new hashtable
+      Node* newHashTable[size];
+      for(int i = 0; i < size; i++)
+      {
+        if(hashTable[i] != NULL)
+        {
+          Node* current = hashTable[i];
+          while(current->next != NULL)
+          {
+            
+            newHashTable[i]
+      
+      return newHashTable;
     }
   }
 }
@@ -131,10 +143,10 @@ void print(char* input, Node* hashTable[], int size)
       Node* current = hashTable[i];
       while(current->next != NULL)
       {
-        cout << current->name << ", " << current->gpa << ", " << current->id << endl;
+        cout << current->firstName << " " << current->lastName << ", " << current->gpa << ", " << current->id << endl;
         current = current->next;
       }
-      cout << current->name << ", " << current->gpa << ", " << current->id << endl;
+      cout << current->firstName << " " << current -> lastName << ", " << current->gpa << ", " << current->id << endl;
     }
   }
   cout << endl;
@@ -167,7 +179,7 @@ void remove(char* input, Node* hashTable[], int size)
   } 
 }
 
-void random(char* input, Node* hashTable, vector<char*> &firstNames, vector<char*> &lastNames)
+void random(char* input, Node* hashTable[], vector<char*> &firstNames, vector<char*> &lastNames)
 {
   cout << "How many random students?" << endl;
   cin.getline(input, 100);
@@ -180,7 +192,10 @@ void random(char* input, Node* hashTable, vector<char*> &firstNames, vector<char
     strcpy(student->firstName, firstNames[r]); //first name = random first name from list
     r = rand()%(firstNames.size() - 1);
     strcpy(student->lastName, lastNames[r]); //last name = random last name from list
-    //do id and gpa
+    float f = 5.0;
+    f = float(rand())/float(RAND_MAX) * f;
+    cout << "gpa: " << f << endl;
+    student->gpa = f;
   }
 }
 
@@ -196,7 +211,7 @@ vector<char*> createList(const char* fileName)
   while (getline(file, line))
   {
     char* c = new char[100];
-    line.erase(remove(line.begin(), line.end(), '\r'), line.end()); //remove \r from end of string
+    //line.erase(remove(line.begin(), line.end(), '\r'), line.end()); //remove \r from end of string
     strcpy(c, line.c_str());
     list.push_back(c);
   }
