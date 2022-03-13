@@ -2,11 +2,9 @@
 //firs names list from: https://www.usna.edu/Users/cs/roche/courses/s15si335/proj1/files.php%3Ff=names.txt.html
 #include <iostream>
 #include <cstring>
-#include <vector>
 #include <fstream>
 #include <string>
-//#include <algorithm>
-
+#include <iomanip>
 
 using namespace std;
 
@@ -19,24 +17,26 @@ struct Node
   char id[100];
 };
 
+void random(char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames);
 int hashFunction(char* input, int size);
-Node** add(char* input, Node** hashTable, int &size);
-void print(char* input, Node** hashTable, int size);
-void remove(char* input, Node** hashTable, int size);
-void random(char* input, Node** hashTable, int size, vector<char*> &firstNames, vector<char*> &lastNames);
-vector<char*> createList(const char* fileName);
+void add(Node* student, Node** pHashTable, int &size);
+void print(char* input, Node** pHashTable, int size);
+void remove(char* input, Node** pHashTable, int size);
+char** createList(const char* fileName);
+
 
 int main() 
 {
-  vector<char*> firstNames = createList("firstNames.txt");
-  vector<char*> lastNames = createList("lastNames.txt");
+  char** firstNames = createList("firstNames.txt");
+  char** lastNames = createList("lastNames.txt");
   Node** pHashTable = new Node*[100]; //pointer to array of Node pointers
-  for(int i = 0; i < 100; i++) pHashTable[i] = NULL;
+  for(int i = 0; i < 100; i++) pHashTable[i] = NULL; //set all pointers in array to null
   char input[100];
   int size = 100;
+  cout << fixed << setprecision(2);
   while(strcmp(input, "quit") != 0)
   {
-    cout << "Enter ADD, PRINT, DELETE, or QUIT" << endl;
+    cout << "Enter ADD, PRINT, DELETE, RANDOM, or QUIT" << endl;
     cin.getline(input, 100);
     for(int i = 0; i < strlen(input); i++)
     {
@@ -44,10 +44,20 @@ int main()
     }
     if(strcmp(input, "add") == 0)
     {
-      if(add(input, pHashTable, size) != NULL)
-      {
-        pHashTable = add(input, pHashTable, size);
-      }
+      Node* student = new Node();
+      cout << "Enter first name" << endl;
+      cin.getline(input, 100);
+      strcpy(student->firstName, input);
+      cout << "Enter last name" << endl;
+      cin.getline(input, 100);
+      strcpy(student->lastName, input);
+      cout << "Enter GPA" << endl;
+      cin.getline(input, 100);
+      student->gpa = atof(input);
+      cout << "Enter ID" << endl;
+      cin.getline(input, 100);
+      strcpy(student->id, input); 
+      add(student, pHashTable, size);
     }
     if(strcmp(input, "print") == 0) //print out all elements in pHashTable
     {
@@ -79,27 +89,11 @@ int hashFunction(char* input, int size)
   return hashValue;
 }
 
-Node** add(char* input, Node** pHashTable, int &size)
+void add(Node* student, Node** pHashTable, int &size)
 {
-  Node* student = new Node();
-  cout << "Enter first name" << endl;
-  cin.getline(input, 100);
-  strcpy(student->firstName, input);
-  cout << "Enter last name" << endl;
-  cin.getline(input, 100);
-  cout << "Enter GPA" << endl;
-  cin.getline(input, 100);
-  student->gpa = atof(input);
-  cout << "Enter ID" << endl;
-  cin.getline(input, 100);
-  strcpy(student->id, input); 
-  int hashValue = hashFunction(input, size);
-  cout << "called1" << endl;
-  //Node* ht = *pHashTable;
+  int hashValue = hashFunction(student->lastName, size);
   if(pHashTable[hashValue] == NULL)//if index is empty
   {
-    cout << "called2" << endl;
-    
     pHashTable[hashValue] = student;
     return NULL;
   }
@@ -121,7 +115,7 @@ Node** add(char* input, Node** pHashTable, int &size)
     {
       //rehash
       size = size*2;
-      Node* newpHashTable[size]; //new hashTable twice the size
+      Node** newpHashTable = new Node*[size]; //new hashTable twice the size
       for(int i = 0; i < size; i++) //go through entire old HashTable
       {
         if(pHashTable[i] != NULL)
@@ -134,14 +128,14 @@ Node** add(char* input, Node** pHashTable, int &size)
           newpHashTable[hashFunction(current->lastName, size)] = current; //add current node to new pHashTable at the new hashvalue index
         }
       }
-      return newpHashTable;
+      pHashTable = newpHashTable;
     }
-    return NULL;
   }
 }
 
 void print(char* input, Node** pHashTable, int size)
 {
+  cout << endl;
   for(int i = 0; i < size; i++)
   {
     if(pHashTable[i] != NULL)
@@ -185,41 +179,45 @@ void remove(char* input, Node** pHashTable, int size)
   } 
 }
 
-void random(char* input, Node** pHashTable, vector<char*> &firstNames, vector<char*> &lastNames)
+void random(char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames)
 {
   cout << "How many random students?" << endl;
   cin.getline(input, 100);
+  srand(time(NULL));
   for(int i = 0; i < atoi(input); i++)
   {
     int r;
-    srand(time(NULL));
-    r = rand()%(firstNames.size() - 1);
+    r = rand()%(299);
     Node* student = new Node();
     strcpy(student->firstName, firstNames[r]); //first name = random first name from list
-    r = rand()%(firstNames.size() - 1);
+    r = rand()%(299);
     strcpy(student->lastName, lastNames[r]); //last name = random last name from list
     float f = 5.0;
     f = float(rand())/float(RAND_MAX) * f;
     cout << "gpa: " << f << endl;
     student->gpa = f;
+    add(student, pHashTable, size);
   }
 }
 
-vector<char*> createList(const char* fileName)
+char** createList(const char* fileName)
 {
-  vector<char*>list;
+  char** list = new char*[300];
   ifstream file(fileName);
   string line;
   if(!file.is_open())
   {
     cout << "Could not open file" << endl;
   }
+  int i = 0;
   while (getline(file, line))
   {
     char* c = new char[100];
     //line.erase(remove(line.begin(), line.end(), '\r'), line.end()); //remove \r from end of string
     strcpy(c, line.c_str());
-    list.push_back(c);
+    list[i] = c;
+    //list.push_back(c);
+    i++;
   }
   return list;
 }
