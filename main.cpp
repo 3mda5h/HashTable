@@ -17,7 +17,7 @@ struct Node
   int id;
 };
 
-void random(int &gpa, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames);
+Node** random(int &gpa, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames);
 unsigned int hashFunction(unsigned int h, int &size);
 Node** add(Node* student, Node** pHashTable, int &size);
 void print(char* input, Node** pHashTable, int size);
@@ -27,7 +27,7 @@ char** createList(const char* fileName);
 
 int main() 
 {
-  int size = 1;
+  int size = 100;
   char** firstNames = createList("firstNames.txt");
   char** lastNames = createList("lastNames.txt");
   Node** pHashTable = new Node*[size]; //pointer to array of Node pointers
@@ -72,7 +72,7 @@ int main()
     }
     if(strcmp(input, "random") == 0)
     {
-      random(id, input, pHashTable, size, firstNames, lastNames);
+      pHashTable = random(id, input, pHashTable, size, firstNames, lastNames);
     }
   }
 }
@@ -84,7 +84,7 @@ unsigned int hashFunction(unsigned int x, int &size)
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = (x >> 16) ^ x;
   x = x%size;
-  cout << x << endl;
+  //cout << x << endl;
   return x;
   //h = h%size;
   //cout << h << endl;
@@ -209,7 +209,7 @@ void remove(char* input, Node** pHashTable, int size)
   cout << "this ID is not in the list" << endl;
 }
 
-void random(int &id, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames)
+Node** random(int &id, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames)
 {
   cout << "How many random students?" << endl;
   cin.getline(input, 100);
@@ -229,6 +229,7 @@ void random(int &id, char* input, Node** pHashTable, int &size, char** firstName
     student->id = id;
     pHashTable = add(student, pHashTable, size);
   }
+  return pHashTable;
 }
 
 char** createList(const char* fileName)
