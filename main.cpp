@@ -1,5 +1,7 @@
+//student list but the students are stored in a hashtable and random students can be generated
+//Emily MacPherson 3/13/22
 //last names list from: https://www.powershellgallery.com/packages/TelligentCommunitySample/0.1.1/Content/Surnames.txt
-//firs names list from: https://www.usna.edu/Users/cs/roche/courses/s15si335/proj1/files.php%3Ff=names.txt.html
+//first names list from: https://www.usna.edu/Users/cs/roche/courses/s15si335/proj1/files.php%3Ff=names.txt.html
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -24,7 +26,6 @@ void print(char* input, Node** pHashTable, int size);
 void remove(char* input, Node** pHashTable, int size);
 char** createList(const char* fileName);
 
-
 int main() 
 {
   int size = 100;
@@ -34,10 +35,10 @@ int main()
   for(int i = 0; i < size; i++) pHashTable[i] = NULL; //set all pointers in array to null
   char input[100];
   int id = 1;
-  cout << fixed << setprecision(2);
+  cout << fixed << setprecision(2); //show 2 decimal places
   while(strcmp(input, "quit") != 0)
   {
-    cout << "Enter ADD, PRINT, DELETE, RANDOM, or QUIT" << endl;
+    cout << "Enter ADD, RANDOM, PRINT, DELETE, or QUIT" << endl;
     cin.getline(input, 100);
     for(int i = 0; i < strlen(input); i++)
     {
@@ -60,7 +61,7 @@ int main()
       student->id = atoi(input);
       pHashTable = add(student, pHashTable, size);
     }
-    if(strcmp(input, "print") == 0) //print out all elements in pHashTable
+    if(strcmp(input, "print") == 0) 
     {
       print(input, pHashTable, size);
     }
@@ -84,31 +85,10 @@ unsigned int hashFunction(unsigned int x, int &size)
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = (x >> 16) ^ x;
   x = x%size;
-  //cout << x << endl;
   return x;
-  //h = h%size;
-  //cout << h << endl;
-  //return h;
-  /*char* p = input;
-  unsigned int h = 2166136261;
-  int i;
-  for (i = 0; i < strlen(p); i++)h = (h*16777619) ^ p[i];
-  h = h%size;
-  cout << h << endl;
-  return h;
-  cout << "size:" << size << endl;
-  int hashValue = 0;
-  for(int i = 0; i < strlen(input); i++)
-  {
-    //cout << "ascii: " << int(input[i]) << endl; 
-    hashValue *= int(input[i]); //multiply ascii values lolol 
-  }
-  //cout << "hash value is: " << hashValue << endl;
-  hashValue = hashValue % size; //remainder of hashvalue divided by size of pHashTable
-  //cout << "hash value is: " << hashValue << endl;
-  return hashValue;*/
 }
 
+//adds student node to hashtable
 Node** add(Node* student, Node** pHashTable, int &size)
 {
   student->next = NULL;
@@ -134,7 +114,6 @@ Node** add(Node* student, Node** pHashTable, int &size)
     }
     else
     {
-      cout << "rehashing" << endl;
       //rehash
       size = size*2;
       Node** newpHashTable = new Node*[size]; //new hashTable twice the size
@@ -147,10 +126,8 @@ Node** add(Node* student, Node** pHashTable, int &size)
           add(current, newpHashTable, size); //add current node to new pHashTable at the new hashvalue index
           while(current->next != NULL)
           {
-            add(current, newpHashTable, size); //add current node to new pHashTable at the new hashvalue index
-            //Node* temp = current;
+            add(current, newpHashTable, size); 
             current = current->next;
-            //temp->next = NULL; 
           }
         }
       }
@@ -159,6 +136,7 @@ Node** add(Node* student, Node** pHashTable, int &size)
   }
 }
 
+//prints out all students in the hashtable
 void print(char* input, Node** pHashTable, int size)
 {
   cout << endl;
@@ -178,6 +156,7 @@ void print(char* input, Node** pHashTable, int size)
   cout << endl;
 }
 
+//removes student with given id
 void remove(char* input, Node** pHashTable, int size)
 {
   int hashValue = hashFunction(atoi(input), size);
@@ -195,7 +174,7 @@ void remove(char* input, Node** pHashTable, int size)
       Node* previous;
       while(current != NULL)
       {
-        if(current->id == atoi(input))
+        if(current->id == atoi(input)) 
         {
           previous->next = NULL;
           delete current;
@@ -209,6 +188,7 @@ void remove(char* input, Node** pHashTable, int size)
   cout << "this ID is not in the list" << endl;
 }
 
+//generates certain amount of random students and puts them in the hashtable
 Node** random(int &id, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames)
 {
   cout << "How many random students?" << endl;
@@ -220,9 +200,9 @@ Node** random(int &id, char* input, Node** pHashTable, int &size, char** firstNa
     int r;
     r = rand()%(299);
     Node* student = new Node();
-    strcpy(student->firstName, firstNames[r]); //first name = random first name from list
+    strcpy(student->firstName, firstNames[r]); //student first name = random first name from list
     r = rand()%(299);
-    strcpy(student->lastName, lastNames[r]); //last name = random last name from list
+    strcpy(student->lastName, lastNames[r]); //student last name = random last name from list
     float f = 5.0;
     f = float(rand())/float(RAND_MAX) * f;
     student->gpa = f;
@@ -232,6 +212,7 @@ Node** random(int &id, char* input, Node** pHashTable, int &size, char** firstNa
   return pHashTable;
 }
 
+//reads file and creates a char pointer array containting the names in the file
 char** createList(const char* fileName)
 {
   char** list = new char*[300];
