@@ -18,7 +18,7 @@ struct Node
 };
 
 void random(int &gpa, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames);
-int hashFunction(char* input, int size);
+int hashFunction(int h, int &size);
 void add(Node* student, Node** pHashTable, int &size);
 void print(char* input, Node** pHashTable, int size);
 void remove(char* input, Node** pHashTable, int size);
@@ -29,10 +29,10 @@ int main()
 {
   char** firstNames = createList("firstNames.txt");
   char** lastNames = createList("lastNames.txt");
-  Node** pHashTable = new Node*[100]; //pointer to array of Node pointers
-  for(int i = 0; i < 100; i++) pHashTable[i] = NULL; //set all pointers in array to null
-  char input[100];
-  int size = 100;
+  Node** pHashTable = new Node*[1]; //pointer to array of Node pointers
+  for(int i = 0; i < 1; i++) pHashTable[i] = NULL; //set all pointers in array to null
+  char input[1];
+  int size = 1;
   int id = 1;
   cout << fixed << setprecision(2);
   while(strcmp(input, "quit") != 0)
@@ -66,6 +66,8 @@ int main()
     }
     if(strcmp(input, "delete") == 0)
     {
+      cout << "ID of person you want to delete?" << endl;
+      cin.getline(input, 100);
       remove(input, pHashTable, size);
     }
     if(strcmp(input, "random") == 0)
@@ -75,31 +77,43 @@ int main()
   }
 }
 
-int hashFunction(char* input, int size)
+int hashFunction(int h, int &size)
 {
-  //cout << "size:" << size << endl;
+  
+  h = h%size;
+  //cout << h << endl;
+  return h;
+  /*char* p = input;
+  unsigned int h = 2166136261;
+  int i;
+  for (i = 0; i < strlen(p); i++)h = (h*16777619) ^ p[i];
+  h = h%size;
+  cout << h << endl;
+  return h;
+  cout << "size:" << size << endl;
   int hashValue = 0;
   for(int i = 0; i < strlen(input); i++)
   {
     //cout << "ascii: " << int(input[i]) << endl; 
-    hashValue += int(input[i]); //add ascii values lolol 
+    hashValue *= int(input[i]); //multiply ascii values lolol 
   }
   //cout << "hash value is: " << hashValue << endl;
   hashValue = hashValue % size; //remainder of hashvalue divided by size of pHashTable
   //cout << "hash value is: " << hashValue << endl;
-  return hashValue;
+  return hashValue;*/
 }
 
 void add(Node* student, Node** pHashTable, int &size)
 {
-  int hashValue = hashFunction(student->lastName, size);
+  student->next = NULL;
+  int hashValue = hashFunction(student->id, size);
   if(pHashTable[hashValue] == NULL)//if index is empty
   {
     pHashTable[hashValue] = student;
   }
   else
   {
-    int count = 0;
+    int count = 1;
     Node* current = pHashTable[hashValue];
     while(current->next != NULL)
     {
@@ -112,25 +126,27 @@ void add(Node* student, Node** pHashTable, int &size)
     }
     else
     {
+      cout << "rehashing" << endl;
       //rehash
       size = size*2;
       Node** newpHashTable = new Node*[size]; //new hashTable twice the size
-      for(int i = 0; i < size; i++) //go through entire old HashTable
+      for(int i = 0; i < size/2; i++) //go through entire old HashTable
       {
         if(pHashTable[i] != NULL)
         {
           Node* current = pHashTable[i];
+          add(current, newpHashTable, size); //add current node to new pHashTable at the new hashvalue index
           while(current->next != NULL)
           {
-            add(current, newpHashTable, size);  //add current node to new pHashTable at the new hashvalue index
+            add(current, newpHashTable, size); //add current node to new pHashTable at the new hashvalue index
             Node* temp = current;
             current = current->next;
             temp->next = NULL; 
           }
-          newpHashTable[hashFunction(current->lastName, size)] = current; //add current node to new pHashTable at the new hashvalue index
         }
       }
       pHashTable = newpHashTable;
+      return;
     }
   }
 }
@@ -156,29 +172,33 @@ void print(char* input, Node** pHashTable, int size)
 
 void remove(char* input, Node** pHashTable, int size)
 {
-  cout << "ID of person you want to delete?" << endl;
-  cin.getline(input, 100);
-  int hashValue = hashFunction(input, size);
+  int hashValue = hashFunction(atoi(input), size);
   Node* current = pHashTable[hashValue];
-  if(current->next == NULL) //if first node is only node at this index
+  if(current != NULL)
   {
-    cout << "1" << endl;
-    pHashTable[hashValue] = NULL;
-    delete current;
-  }
-  else
-  {
-    while(current->next != NULL)
+    if(current->next == NULL) //if first node is only node at this index
     {
-      if(current->id == atoi(input))
-      {
-        //current->previous->next = NULL;
-        delete current;
-        break;
-      }
-      current = current->next;
+      pHashTable[hashValue] = NULL;
+      delete current;
+      return;
     }
-  } 
+    else
+    {
+      Node* previous;
+      while(current != NULL)
+      {
+        if(current->id == atoi(input))
+        {
+          previous->next = NULL;
+          delete current;
+          return;
+        }
+        previous = current;
+        current = current->next;
+      }
+    }    
+  }
+  cout << "this ID is not in the list" << endl;
 }
 
 void random(int &id, char* input, Node** pHashTable, int &size, char** firstNames, char** lastNames)
@@ -197,7 +217,6 @@ void random(int &id, char* input, Node** pHashTable, int &size, char** firstName
     strcpy(student->lastName, lastNames[r]); //last name = random last name from list
     float f = 5.0;
     f = float(rand())/float(RAND_MAX) * f;
-    cout << "gpa: " << f << endl;
     student->gpa = f;
     student->id = id;
     add(student, pHashTable, size);
